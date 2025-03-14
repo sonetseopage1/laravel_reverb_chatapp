@@ -24,6 +24,7 @@ class MessageController extends Controller
             ->latest()
             ->paginate(30);
 
+            $messages = $messages->reverse();
         $users = User::where('id', '!=', auth()->id())->get();
         $receiver = User::find($id);
 
