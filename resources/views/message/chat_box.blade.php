@@ -94,8 +94,10 @@
 
                     <div class="card-footer">
                         <div id="typing-indicator" style="display: none;">
-                            <span>{{ $receiver->name }} is typing...</span>
+                            <span class="loading">{{ $receiver->name }} is typing</span>
                         </div>
+
+
                         <form id="messageForm" class="mb-3">
                             @csrf
                             <div class="mt-2">
@@ -174,6 +176,8 @@
                 console.log('object', e);
 
                 if (e.sender == receiverId) {
+                    document.getElementById('typing-indicator').style.display = 'none';
+
                     const lastMessage = notification.lastElementChild;
                     const isSender = lastMessage && lastMessage.classList.contains('Chat_item_l');
 
@@ -205,7 +209,7 @@
             scrollToBottom();
 
 
-            window.Echo.channel('messagest.' + receiverId).listen('.typing', (e) => {
+            window.Echo.channel('messagestype.' + receiverId).listen('.typing', (e) => {
                 if (event.receiver == null) {
                     document.getElementById('typing-indicator').style.display = 'none';
                 }
@@ -217,14 +221,14 @@
             const typingTimeout = 2000; // 2 seconds
             let typingTimer;
 
-            messageInput.addEventListener("input", function() {
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(function() {
-                    stopTyping();
-                }, typingTimeout);
+            messageInput.addEventListener("keydown", function() {
                 typing();
             });
 
+            messageInput.addEventListener("blur", function() {
+                clearTimeout(typingTimer);
+                stopTyping(); // Immediately stop typing when input loses focus
+            });
 
             function typing() {
                 const senderId = {{ auth()->user()->id }};

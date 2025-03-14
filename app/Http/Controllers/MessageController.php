@@ -21,9 +21,16 @@ class MessageController extends Controller
 
     public function inbox($id)
     {
-        $messages = Message::where('sender', auth()->id())->orWhere('receiver', auth()->id())
-            ->latest()
-            ->paginate(30);
+        $messages = Message::where(function ($query) use ($id) {
+            $query->where('sender', auth()->id())
+                  ->where('receiver', $id);
+        })
+        ->orWhere(function ($query) use ($id) {
+            $query->where('sender', $id)
+                  ->where('receiver', auth()->id());
+        })
+        ->latest()  // Order by the latest messages
+        ->paginate(30);
 
         $messages = $messages->reverse();
         $users = User::where('id', '!=', auth()->id())->get();

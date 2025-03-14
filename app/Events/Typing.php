@@ -28,7 +28,7 @@ class Typing implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new Channel('messagest.' . $this->senderId);
+        return new Channel('messagestype.' . $this->senderId);
     }
 
     public function broadcastAs()
