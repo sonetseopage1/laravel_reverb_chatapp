@@ -65,7 +65,7 @@
                                     @if ($group['sender'] == 'auth')
                                         <li class="Chat_item Chat_item_l">
                                             <div class="i_man">
-                                                <img src="https://i.postimg.cc/L5v3P42G/IMG-20180513-182600080.jpg"
+                                                <img src="https://avatar.iran.liara.run/public/boy"
                                                     class="i_man-image" />
                                             </div>
                                             <div class="Chat_msgs">
@@ -190,7 +190,7 @@
                         notification.insertAdjacentHTML('beforeend', `
                     <li class="Chat_item Chat_item_l">
                     <div class="i_man">
-                        <img src="https://i.postimg.cc/L5v3P42G/IMG-20180513-182600080.jpg" class="i_man-image" />
+                        <img src="https://avatar.iran.liara.run/public/boy" class="i_man-image" />
                     </div>
                     <div class="Chat_msgs">
                         <div class="msg">
