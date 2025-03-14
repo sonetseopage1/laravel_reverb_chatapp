@@ -205,28 +205,23 @@
             scrollToBottom();
 
 
-            window.Echo.channel('messagest.'+ userId).listen('.typing', (e) => {
-                    console.log('object', e);
-                    if (e.sender === {{ auth()->user()->id }}) {
-                        document.getElementById('typing-indicator').style.display = 'block';
-                        // Show typing indicator
-                        console.log("User is typing...");
-                    }
-                });
-
+            window.Echo.channel('messagest.' + receiverId).listen('.typing', (e) => {
+                if (e.receiver == null) {
+                    document.getElementById('typing-indicator').style.display = 'none';
+                }
+                if (e.receiver == userId) {
+                    document.getElementById('typing-indicator').style.display = 'block';
+                }
+            });
 
             const typingTimeout = 5000; // 2 seconds
             let typingTimer;
 
             messageInput.addEventListener("input", function() {
                 clearTimeout(typingTimer);
-
                 typingTimer = setTimeout(function() {
-                    // Send the "stop typing" event after a delay
                     stopTyping();
                 }, typingTimeout);
-
-                // Send the "typing" event immediately when the user types
                 typing();
             });
 
@@ -244,7 +239,8 @@
                         }),
                         headers: {
                             "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                "content"),
                         },
                     })
                     .then(response => response.json())
@@ -264,13 +260,12 @@
                         }),
                         headers: {
                             "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                "content"),
                         },
                     })
                     .then(response => response.json())
                     .catch(error => console.error("Error:", error));
             }
-
-
         </script>
     @endsection

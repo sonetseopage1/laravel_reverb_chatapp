@@ -15,12 +15,15 @@ class Typing implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $senderId;
 
-    public function __construct($senderId)
+    public $senderId;
+    public $receiver_id;
+
+    public function __construct($senderId, $receiver_id)
     {
 
         $this->senderId = $senderId;
+        $this->receiver_id = $receiver_id;
     }
 
     public function broadcastOn()
@@ -35,6 +38,9 @@ class Typing implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        return ['sender' => $this->senderId];
+        return [
+            'receiver' => $this->receiver_id,
+            'sender' => $this->senderId
+        ];
     }
 }

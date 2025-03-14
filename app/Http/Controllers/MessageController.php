@@ -87,7 +87,7 @@ class MessageController extends Controller
         $receiverId = $request->receiver;
 
         // Trigger the Typing event
-        event(new Typing($receiverId));
+        event(new Typing( $senderId, $receiverId,));
 
         return response()->json(['success' => true]);
     }
@@ -96,10 +96,10 @@ class MessageController extends Controller
     public function stopTyping(Request $request)
     {
         $senderId = $request->sender;
-        $receiverId = $request->receiver;
+        $receiverId = null;
 
         // Optionally broadcast a stop typing event or do other logic
-        event(new Typing(null));  // Passing null to indicate typing has stopped
+        event(new Typing( $senderId, $receiverId,));  // Passing null to indicate typing has stopped
 
         return response()->json(['success' => true]);
     }
