@@ -138,7 +138,17 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            notification.insertAdjacentHTML('beforeend', `
+
+                            const lastMessage = notification.lastElementChild;
+                            const isReceiver = lastMessage && lastMessage.classList.contains('Chat_item_r');
+
+                            if (isReceiver) {
+                                lastMessage.querySelector('.Chat_msgs').insertAdjacentHTML('beforeend', `
+                                <div class="msg">
+                                    <div class="msg-content">${data.message}</div>
+                                </div>`);
+                            } else {
+                                notification.insertAdjacentHTML('beforeend', `
                             <li class="Chat_item Chat_item_r">
                                 <div class="Chat_msgs">
                                     <div class="msg">
@@ -146,6 +156,8 @@
                                     </div>
                                 </div>
                             </li>`);
+                            }
+
                             messageInput.value = "";
                             scrollToBottom();
                         }
@@ -155,40 +167,30 @@
 
 
             window.Echo.channel("messages." + userId).listen(".create", (e) => {
-                const lastMessage = notification.lastElementChild; // Get the last message in the notification list
-                const lastMessageInsert = notification.lastElementChild; // Get the last message in the notification list
-                const isSender = lastMessage && lastMessage.classList.contains(
-                    'Chat_item_l'); // Check if the last message was sent by the user
-
-                // Determine the message class based on whether the last message was from the sender or receiver
-                const messageClass = isSender ? 'Chat_item_l' : 'Chat_item_l';
-
-                console.log('object', lastMessage)
+                console.log('object', e);
+                const lastMessage = notification.lastElementChild;
+                const isSender = lastMessage && lastMessage.classList.contains('Chat_item_l');
 
                 if (isSender) {
-                    // Insert the new message
                     lastMessage.querySelector('.Chat_msgs').insertAdjacentHTML('beforeend', `
-            <div class="msg">
-                <div class="msg-content">${e.message}</div>
-            </div>`);
+                    <div class="msg">
+                        <div class="msg-content">${e.message}</div>
+                    </div>`);
                 } else {
-                    // Insert the new message
                     notification.insertAdjacentHTML('beforeend', `
-                <li class="Chat_item ${messageClass}">
-                    ${messageClass === 'Chat_item_l' ? `
-                                        <div class="i_man">
-                                            <img src="https://i.postimg.cc/L5v3P42G/IMG-20180513-182600080.jpg" class="i_man-image" />
-                                        </div>
-                                    ` : ''}
+                    <li class="Chat_item Chat_item_l">
+                    <div class="i_man">
+                        <img src="https://i.postimg.cc/L5v3P42G/IMG-20180513-182600080.jpg" class="i_man-image" />
+                    </div>
                     <div class="Chat_msgs">
                         <div class="msg">
-                            <div class="msg-content">${e.message}</div>
+                        <div class="msg-content">
+                            ${e.message}
+                        </div>
                         </div>
                     </div>
-                </li>`);
+                    </li>`);
                 }
-
-                // Scroll to the bottom to show the latest message
                 scrollToBottom();
             });
 
