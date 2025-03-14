@@ -206,7 +206,7 @@
 
 
             window.Echo.channel('messagest.' + receiverId).listen('.typing', (e) => {
-                if (e.receiver == null) {
+                if (event.receiver == null) {
                     document.getElementById('typing-indicator').style.display = 'none';
                 }
                 if (e.receiver == userId) {
@@ -214,7 +214,7 @@
                 }
             });
 
-            const typingTimeout = 5000; // 2 seconds
+            const typingTimeout = 2000; // 2 seconds
             let typingTimer;
 
             messageInput.addEventListener("input", function() {
