@@ -3,32 +3,24 @@
 @section('content')
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-12">
+            <div class="col-md-4">
+                <div class="card">
+                    <ul class="list-group" style="list-style: none">
+                        @foreach ($users as $user)
+                            <li>
+                                <a href="/inbox/{{ $user->id }}" class="list-group-item">{{ $user->name }}</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">{{ __('Dashboard') }}</div>
 
-                    <div class="card-body">
-
-
-
-                        <form class="mb-3" action="{{ route('posts.store') }}" method="POST">
-                            @csrf
-                            <div class="mt-2">
-                                <label>Write Message</label>
-                                <input type="text" class="form-control" name="body" />
-                            </div>
-                            <div class="mt-2">
-                                <button type="submit" class="btn btn-primary">Send</button>
-                            </div>
-                        </form>
-
-                        <div>
-                            <div id="notification">
-                                @foreach ($posts as $post)
-                                    <div class="alert alert-success">{{ $post->body }}</div>
-                                @endforeach
-                            </div>
-                        </div>
+                    <div class="card-body vh-50">
+                        <h5 class="Text-center">Start Converstion</h5>
                     </div>
                 </div>
             </div>
@@ -38,7 +30,9 @@
 
 @section('script')
     <script type="module">
-        window.Echo.channel("messages").listen(".create", (e) => {
+        const userId = {{ auth()->user()->id }};
+
+        window.Echo.channel("messages." + userId).listen(".create", (e) => {
             console.log(e);
             var note = document.getElementById("notification");
             note.insertAdjacentHTML('afterbegin', `<div class="alert alert-success">${e.message}</div>`);

@@ -4,22 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Events\PostCreate;
 use App\Models\Conversation;
-use App\Models\Post;
+use App\Models\Message;
+use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
 
-class PostController extends Controller
+class MessageController extends Controller
 {
     public function index()
     {
-        $posts = Post::where(function ($query) {
-            $query->where('sender', auth()->id())
-                ->orWhere('receiver', auth()->id());
-        })
+        $users = User::where('id', '!=', auth()->id())->get();
+
+        return view('posts.index', compact('users'));
+    }
+
+    public function inbox($id)
+    {
+        $messages = Message::where('sender', auth()->id())->orWhere('receiver', auth()->id())
             ->latest()
             ->paginate(5);
 
-        return view('posts.index', compact('posts'));
+        $users = User::where('id', '!=', auth()->id())->get();
+        $receiver = User::find($id);
+
+        return view('posts.chat_box', compact('users', 'messages', 'receiver'));
     }
 
     public function store(Request $request)
@@ -36,7 +44,6 @@ class PostController extends Controller
         $receiverId = $request->receiver;
 
         try {
-
             $conversation = Conversation::whereJsonContains('participants', $senderId)
                 ->whereJsonContains('participants', $receiverId)
                 ->first();
@@ -49,7 +56,7 @@ class PostController extends Controller
                 ]);
             }
 
-            $post = Post::create([
+            $post = Message::create([
                 'body' => $request->body,
                 'sender' => auth()->id(),
                 'receiver' => $request->receiver,
@@ -69,9 +76,8 @@ class PostController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            return $e;
             return redirect()->back()->with('error', 'An error occurred while storing the message.');
         }
     }
-
-
 }
