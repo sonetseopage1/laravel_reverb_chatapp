@@ -93,6 +93,9 @@
                     </div>
 
                     <div class="card-footer">
+                        <div id="typing-indicator" style="display: none;">
+                            <span>{{ $receiver->name }} is typing...</span>
+                        </div>
                         <form id="messageForm" class="mb-3">
                             @csrf
                             <div class="mt-2">
@@ -113,6 +116,7 @@
     @section('script')
         <script type="module">
             const userId = {{ auth()->user()->id }};
+            const receiverId = {{ $receiver->id }};
             const chatBox = document.getElementById("chat-box");
             const notification = document.getElementById("notification");
             const messageForm = document.getElementById("messageForm");
@@ -168,16 +172,18 @@
 
             window.Echo.channel("messages." + userId).listen(".create", (e) => {
                 console.log('object', e);
-                const lastMessage = notification.lastElementChild;
-                const isSender = lastMessage && lastMessage.classList.contains('Chat_item_l');
 
-                if (isSender) {
-                    lastMessage.querySelector('.Chat_msgs').insertAdjacentHTML('beforeend', `
+                if (e.sender == receiverId) {
+                    const lastMessage = notification.lastElementChild;
+                    const isSender = lastMessage && lastMessage.classList.contains('Chat_item_l');
+
+                    if (isSender) {
+                        lastMessage.querySelector('.Chat_msgs').insertAdjacentHTML('beforeend', `
                     <div class="msg">
                         <div class="msg-content">${e.message}</div>
                     </div>`);
-                } else {
-                    notification.insertAdjacentHTML('beforeend', `
+                    } else {
+                        notification.insertAdjacentHTML('beforeend', `
                     <li class="Chat_item Chat_item_l">
                     <div class="i_man">
                         <img src="https://i.postimg.cc/L5v3P42G/IMG-20180513-182600080.jpg" class="i_man-image" />
@@ -190,10 +196,81 @@
                         </div>
                     </div>
                     </li>`);
+                    }
                 }
+
                 scrollToBottom();
             });
 
             scrollToBottom();
+
+
+            window.Echo.channel('messagest.'+ userId).listen('.typing', (e) => {
+                    console.log('object', e);
+                    if (e.sender === {{ auth()->user()->id }}) {
+                        document.getElementById('typing-indicator').style.display = 'block';
+                        // Show typing indicator
+                        console.log("User is typing...");
+                    }
+                });
+
+
+            const typingTimeout = 5000; // 2 seconds
+            let typingTimer;
+
+            messageInput.addEventListener("input", function() {
+                clearTimeout(typingTimer);
+
+                typingTimer = setTimeout(function() {
+                    // Send the "stop typing" event after a delay
+                    stopTyping();
+                }, typingTimeout);
+
+                // Send the "typing" event immediately when the user types
+                typing();
+            });
+
+
+            function typing() {
+                const senderId = {{ auth()->user()->id }};
+                const receiverId = {{ $receiver->id }};
+
+                // Send AJAX request to indicate that the user is typing
+                fetch("{{ route('messages.typing') }}", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            sender: senderId,
+                            receiver: receiverId,
+                        }),
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    })
+                    .then(response => response.json())
+                    .catch(error => console.error("Error:", error));
+            }
+
+            function stopTyping() {
+                const senderId = {{ auth()->user()->id }};
+                const receiverId = {{ $receiver->id }};
+
+                // Send AJAX request to indicate that the user has stopped typing
+                fetch("{{ route('messages.stopTyping') }}", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            sender: senderId,
+                            receiver: receiverId,
+                        }),
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    })
+                    .then(response => response.json())
+                    .catch(error => console.error("Error:", error));
+            }
+
+
         </script>
     @endsection

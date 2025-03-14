@@ -35,17 +35,20 @@ class PostCreate implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('messages.'.$this->post->receiver),
+            new Channel('messages.' . $this->post->receiver),
         ];
     }
     public function broadcastAs()
     {
-        return  "create";
+        return "create";
     }
 
-    public function broadcastWith(){
+    public function broadcastWith()
+    {
         return [
-            "message" => "{$this->post->body}"
+            "message" => $this->post->body,
+            "sender" => (int) $this->post->sender,  // Correctly cast to int
         ];
     }
+
 }

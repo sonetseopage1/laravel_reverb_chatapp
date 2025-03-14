@@ -17,4 +17,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('message.index');
     Route::get('/inbox/{id}', [MessageController::class, 'inbox'])->name('inbox');
     Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+
+
+    Route::post('/messages/typing', [MessageController::class, 'typing'])->name('messages.typing');
+    Route::post('/messages/stopTyping', [MessageController::class, 'stopTyping'])->name('messages.stopTyping');
 });

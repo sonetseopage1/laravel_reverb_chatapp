@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\PostCreate;
+use App\Events\Typing;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
@@ -24,7 +25,7 @@ class MessageController extends Controller
             ->latest()
             ->paginate(30);
 
-            $messages = $messages->reverse();
+        $messages = $messages->reverse();
         $users = User::where('id', '!=', auth()->id())->get();
         $receiver = User::find($id);
 
@@ -78,5 +79,28 @@ class MessageController extends Controller
             DB::rollBack();
             return response()->json(["success" => false, "error" => "An error occurred while storing the message."]);
         }
+    }
+
+    public function typing(Request $request)
+    {
+        $senderId = $request->sender;
+        $receiverId = $request->receiver;
+
+        // Trigger the Typing event
+        event(new Typing($receiverId));
+
+        return response()->json(['success' => true]);
+    }
+
+    // Handle stop typing event
+    public function stopTyping(Request $request)
+    {
+        $senderId = $request->sender;
+        $receiverId = $request->receiver;
+
+        // Optionally broadcast a stop typing event or do other logic
+        event(new Typing(null));  // Passing null to indicate typing has stopped
+
+        return response()->json(['success' => true]);
     }
 }
