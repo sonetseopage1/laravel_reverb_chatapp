@@ -16,6 +16,10 @@ return new class extends Migration {
             $table->integer('sender');
             $table->integer('receiver');
             $table->bigInteger('conversation_id');
+            $table->bigInteger('reply_of')->nullable();
+            $table->json('reacts')->nullable();
+            $table->json('viewer')->nullable();
+            $table->boolean('view_status')->default(false);
             $table->timestamps();
         });
     }

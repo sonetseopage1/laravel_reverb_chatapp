@@ -1,0 +1,133 @@
+@extends('layouts.app')
+
+@section('content')
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card">
+                    <ul class="list-group" style="list-style: none">
+                        @foreach ($users as $user)
+                            <li class="bg-primary">
+                                <a href="/inbox/{{ $user->id }}"
+                                    class="list-group-item @if ($user->id == $receiver->id) bg-primary text-white @endif">{{ $user->name }}</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">{{ $receiver->name }}</div>
+                    <div class="card-body">
+                        <div class="Chat__wrapper" id="chat-box">
+                            <ul class="Chat" id="notification">
+                                @foreach ($messages as $message)
+                                    @if ($message->receiver == auth()->id())
+                                        <li class="Chat_item Chat_item_l">
+                                            <div class="i_man">
+                                                <img src="https://i.postimg.cc/L5v3P42G/IMG-20180513-182600080.jpg"
+                                                    class="i_man-image" />
+                                            </div>
+                                            <div class="Chat_msgs">
+                                                <div class="msg">
+                                                    <div class="msg-content">
+                                                        {{ $message->body }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    @else
+                                        <li class="Chat_item Chat_item_r">
+                                            <div class="Chat_msgs">
+                                                <div class="msg">
+                                                    <div class="msg-content">
+                                                        {{ $message->body }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <form id="messageForm" class="mb-3">
+                            @csrf
+                            <div class="mt-2">
+                                <label>Write Message</label>
+                                <input type="text" class="form-control" name="body" id="messageInput" required />
+                            </div>
+                            <input type="hidden" name="receiver" value="{{ $receiver->id }}">
+                            <div class="mt-2">
+                                <button type="submit" class="btn btn-primary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endsection
+
+    @section('script')
+        <script type="module">
+            const userId = {{ auth()->user()->id }};
+            const chatBox = document.getElementById("chat-box");
+            const notification = document.getElementById("notification");
+            const messageForm = document.getElementById("messageForm");
+            const messageInput = document.getElementById("messageInput");
+
+            function scrollToBottom() {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            messageForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                let formData = new FormData(messageForm);
+
+                fetch("{{ route('messages.store') }}", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notification.insertAdjacentHTML('beforeend', `
+                            <li class="Chat_item Chat_item_r">
+                                <div class="Chat_msgs">
+                                    <div class="msg">
+                                        <div class="msg-content">${data.message}</div>
+                                    </div>
+                                </div>
+                            </li>`);
+                        messageInput.value = "";
+                        scrollToBottom();
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+
+            window.Echo.channel("messages." + userId).listen(".create", (e) => {
+                notification.insertAdjacentHTML('beforeend', `
+                    <li class="Chat_item Chat_item_l">
+                        <div class="i_man">
+                            <img src="https://i.postimg.cc/L5v3P42G/IMG-20180513-182600080.jpg" class="i_man-image" />
+                        </div>
+                        <div class="Chat_msgs">
+                            <div class="msg">
+                                <div class="msg-content">${e.message}</div>
+                            </div>
+                        </div>
+                    </li>`);
+                scrollToBottom();
+            });
+
+            scrollToBottom();
+        </script>
+    @endsection

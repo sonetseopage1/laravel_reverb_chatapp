@@ -15,19 +15,19 @@ class MessageController extends Controller
     {
         $users = User::where('id', '!=', auth()->id())->get();
 
-        return view('posts.index', compact('users'));
+        return view('message.index', compact('users'));
     }
 
     public function inbox($id)
     {
         $messages = Message::where('sender', auth()->id())->orWhere('receiver', auth()->id())
             ->latest()
-            ->paginate(5);
+            ->paginate(30);
 
         $users = User::where('id', '!=', auth()->id())->get();
         $receiver = User::find($id);
 
-        return view('posts.chat_box', compact('users', 'messages', 'receiver'));
+        return view('message.chat_box', compact('users', 'messages', 'receiver'));
     }
 
     public function store(Request $request)
@@ -58,8 +58,8 @@ class MessageController extends Controller
 
             $post = Message::create([
                 'body' => $request->body,
-                'sender' => auth()->id(),
-                'receiver' => $request->receiver,
+                'sender' => $senderId,
+                'receiver' => $receiverId,
                 'conversation_id' => $conversation->id,
             ]);
 
@@ -72,12 +72,10 @@ class MessageController extends Controller
 
             DB::commit();
 
-            return redirect()->back();
-
+            return response()->json(["success" => true, "message" => $post->body]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $e;
-            return redirect()->back()->with('error', 'An error occurred while storing the message.');
+            return response()->json(["success" => false, "error" => "An error occurred while storing the message."]);
         }
     }
 }
