@@ -4,16 +4,7 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-4">
-                <div class="card">
-                    <ul class="list-group" style="list-style: none">
-                        @foreach ($users as $user)
-                            <li class="bg-primary">
-                                <a href="/inbox/{{ $user->id }}"
-                                    class="list-group-item @if ($user->id == $receiver->id) bg-primary text-white @endif">{{ $user->name }}</a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                @include('layouts.inc.userList')
             </div>
 
             <div class="col-md-8">
@@ -65,8 +56,7 @@
                                     @if ($group['sender'] == 'auth')
                                         <li class="Chat_item Chat_item_l">
                                             <div class="i_man">
-                                                <img src="https://avatar.iran.liara.run/public/boy"
-                                                    class="i_man-image" />
+                                                <img src="https://avatar.iran.liara.run/public/boy?username={{ $receiver->id }}" class="i_man-image" />
                                             </div>
                                             <div class="Chat_msgs">
                                                 @foreach ($group['messages'] as $message)
@@ -190,7 +180,7 @@
                         notification.insertAdjacentHTML('beforeend', `
                     <li class="Chat_item Chat_item_l">
                     <div class="i_man">
-                        <img src="https://avatar.iran.liara.run/public/boy" class="i_man-image" />
+                        <img src="https://avatar.iran.liara.run/public/boy?username=${receiverId}" class="i_man-image" />
                     </div>
                     <div class="Chat_msgs">
                         <div class="msg">
@@ -271,5 +261,43 @@
                     .then(response => response.json())
                     .catch(error => console.error("Error:", error));
             }
+        </script>
+
+        <script>
+            $(document).ready(function() {
+                let selectedUserId = {{ $receiver->id ?? 'null' }};
+
+                fetchUsers(); // Fetch users on page load
+
+                function fetchUsers() {
+                    $.ajax({
+                        url: "/users", // The endpoint to fetch users
+                        type: "GET",
+                        dataType: "json",
+                        success: function(users) {
+                            let userList = $(".user-list");
+                            userList.empty(); // Clear previous list
+
+                            users.forEach(user => {
+                                let isSelected = user.id == selectedUserId ?
+                                    "bg-primary text-white" : "";
+                                let userItem = `<li>
+                                    <a href="/inbox/${user.id}" class="list-group-item d-flex align-items-center ${isSelected}">
+                                        <div class="i_man">
+                                            <img src="https://avatar.iran.liara.run/public/boy?username=${user.id}" class="i_man-image" />
+                                        </div>
+                                        <div class="ms-2 flex-grow-1 d-flex align-items-center">${user.name}</div>
+                                    </a>
+                                </li>
+                                `;
+                                userList.append(userItem);
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error fetching users:", error);
+                        }
+                    });
+                }
+            });
         </script>
     @endsection

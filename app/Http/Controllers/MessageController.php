@@ -33,10 +33,9 @@ class MessageController extends Controller
         ->paginate(30);
 
         $messages = $messages->reverse();
-        $users = User::where('id', '!=', auth()->id())->get();
         $receiver = User::find($id);
 
-        return view('message.chat_box', compact('users', 'messages', 'receiver'));
+        return view('message.chat_box', compact( 'messages', 'receiver'));
     }
 
     public function store(Request $request)
@@ -50,7 +49,7 @@ class MessageController extends Controller
         DB::beginTransaction();
 
         $senderId = auth()->id();
-        $receiverId = $request->receiver;
+        $receiverId = (int) $request->receiver;
 
         try {
             $conversation = Conversation::whereJsonContains('participants', $senderId)
@@ -106,7 +105,7 @@ class MessageController extends Controller
         $receiverId = null;
 
         // Optionally broadcast a stop typing event or do other logic
-        event(new Typing( $senderId, $receiverId,));  // Passing null to indicate typing has stopped
+        event(new Typing( $senderId, $receiverId,));
 
         return response()->json(['success' => true]);
     }

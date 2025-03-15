@@ -17,7 +17,7 @@
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
-    @yield('script')
+
 
     <link href="{{ asset('assets/custom_style.css') }}" rel="stylesheet" />
 
@@ -86,6 +86,9 @@
         <main class="py-4">
             @yield('content')
         </main>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        @yield('script')
     </div>
 </body>
 
