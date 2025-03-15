@@ -14,9 +14,7 @@ class MessageController extends Controller
 {
     public function index()
     {
-        $users = User::where('id', '!=', auth()->id())->get();
-
-        return view('message.index', compact('users'));
+        return view('message.index');
     }
 
     public function inbox($id)

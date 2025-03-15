@@ -4,15 +4,7 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-4">
-                <div class="card">
-                    <ul class="list-group" style="list-style: none">
-                        @foreach ($users as $user)
-                            <li>
-                                <a href="/inbox/{{ $user->id }}" class="list-group-item">{{ $user->name }}</a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                @include('layouts.inc.userList')
             </div>
 
             <div class="col-md-8">

@@ -17,11 +17,7 @@
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
-
-
     <link href="{{ asset('assets/custom_style.css') }}" rel="stylesheet" />
-
-
 </head>
 
 <body>
@@ -88,7 +84,7 @@
         </main>
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        @yield('script')
+        @stack('script')
 
     </div>
 </body>
