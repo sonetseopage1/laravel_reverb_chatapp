@@ -95,19 +95,22 @@
 
                     <div class="card-footer">
                         <div id="typing-indicator" style="display: none;">
-                            <span class="loading">{{ $receiver->name }} is typing</span>
+                            <span class="loading_ind">{{ $receiver->name }} is typing</span>
                         </div>
 
 
                         <form id="messageForm" class="mb-3">
                             @csrf
+                            <input type="hidden" name="receiver" value="{{ $receiver->id }}">
+
                             <div class="mt-2">
                                 <label>Write Message</label>
-                                <input type="text" class="form-control" name="body" id="messageInput" required />
-                            </div>
-                            <input type="hidden" name="receiver" value="{{ $receiver->id }}">
-                            <div class="mt-2">
-                                <button type="submit" class="btn btn-primary">Send</button>
+                                <div class="d-flex gap-3">
+                                    <input type="text" class="form-control" name="body" id="messageInput" required />
+                                    <div class="wrapper">
+                                        <button class="sendButton btn btn-primary" type="submit">Send</button>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -132,6 +135,10 @@
             messageForm.addEventListener("submit", function(e) {
                 e.preventDefault();
 
+                const button = messageForm.querySelector('button');
+                button.disabled = true;
+                button.innerHTML = '<span class="loading_ind px-3"></span>';
+
                 let formData = new FormData(messageForm);
 
                 fetch("{{ route('messages.store') }}", {
@@ -145,32 +152,39 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            button.disabled = false;
+                            button.innerHTML = 'Send';
 
                             const lastMessage = notification.lastElementChild;
                             const isReceiver = lastMessage && lastMessage.classList.contains('Chat_item_r');
 
                             if (isReceiver) {
                                 lastMessage.querySelector('.Chat_msgs').insertAdjacentHTML('beforeend', `
-                                <div class="msg">
-                                    <div class="msg-content">${data.message}</div>
-                                </div>`);
+                    <div class="msg">
+                        <div class="msg-content">${data.message}</div>
+                    </div>`);
                             } else {
                                 notification.insertAdjacentHTML('beforeend', `
-                            <li class="Chat_item Chat_item_r">
-                                <div class="Chat_msgs">
-                                    <div class="msg">
-                                        <div class="msg-content">${data.message}</div>
-                                    </div>
-                                </div>
-                            </li>`);
+                    <li class="Chat_item Chat_item_r">
+                        <div class="Chat_msgs">
+                            <div class="msg">
+                                <div class="msg-content">${data.message}</div>
+                            </div>
+                        </div>
+                    </li>`);
                             }
 
                             messageInput.value = "";
                             scrollToBottom();
                         }
                     })
-                    .catch(error => console.error("Error:", error));
+                    .catch(error => {
+                        console.error("Error:", error);
+                        button.disabled = false;
+                        button.innerHTML = 'Send';
+                    });
             });
+
 
 
             window.Echo.channel("messages." + userId).listen(".create", (e) => {
