@@ -207,7 +207,7 @@
             window.Echo.channel("messages." + userId).listen(".create", (e) => {
                 console.log('object', e);
 
-                if (e.sender == receiverId) {
+                if (e.sender == rcvr_id) {
                     document.getElementById('typing-indicator').style.display = 'none';
 
                     const lastMessage = notification.lastElementChild;
@@ -222,7 +222,7 @@
                         notification.insertAdjacentHTML('beforeend', `
             <li class="Chat_item Chat_item_l">
                 <div class="i_man">
-                    <img src="https://avatar.iran.liara.run/public/boy?username=${receiverId}" class="i_man-image" />
+                    <img src="https://avatar.iran.liara.run/public/boy?username=${rcvr_id}" class="i_man-image" />
                 </div>
                 <div class="Chat_msgs">
                     <div class="msg">
@@ -241,11 +241,12 @@
             scrollToBottom();
 
 
-            window.Echo.channel('messagestype.' + receiverId).listen('.typing', (e) => {
+            window.Echo.channel('messagestype.' + rcvr_id).listen('.typing', (e) => {
+                console.log('data', e)
                 if (event.receiver == null) {
                     document.getElementById('typing-indicator').style.display = 'none';
                 }
-                if (e.receiver == userId) {
+                if (e.receiver == userId && e.sender == rcvr_id) {
                     document.getElementById('typing-indicator').style.display = 'block';
                 }
             });

@@ -1,4 +1,4 @@
-<ul class="Chat">
+<ul class="Chat" id="notification">
     @php
         $prevSender = null;
         $messagesGrouped = [];
