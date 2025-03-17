@@ -3,6 +3,7 @@
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VideoCallController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\Translation\MessageCatalogue;
 
@@ -25,4 +26,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/message_inbox/{id}', [MessageController::class, 'message_inbox'])->name('message_inbox');
     Route::get('/chat/load-more', [MessageController::class, 'loadMoreMessages'])->name('chat.loadMore');
 
+    Route::get('/video/call', [VideoCallController::class, 'call']);
+    Route::post('/video/signal', [VideoCallController::class, 'signal']);
 });

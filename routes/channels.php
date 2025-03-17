@@ -10,6 +10,9 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('messages.{receiverId}', function ($user, $receiverId) {
     return (int) $user->id === (int) $receiverId;
 });
+Broadcast::channel('video-chat.{receiverId}', function ($user, $receiverId) {
+    return (int) $user->id === (int) $receiverId;
+});
 
 Broadcast::channel('online-users', function ($user) {
     return $user;

@@ -29,6 +29,7 @@
             <label>Write Message</label>
             <div class="d-flex gap-3">
                 <input type="text" class="form-control" name="body" id="messageInput" required />
+                <span class="btn btn-success text-white" id="startCall">Call</span>
                 <div class="wrapper">
                     <button class="sendButton btn btn-primary" type="submit">Send</button>
                 </div>

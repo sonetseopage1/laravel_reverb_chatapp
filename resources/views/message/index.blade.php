@@ -15,8 +15,12 @@
                         <h5 class="Text-center">Start Converstion</h5>
                     </div>
                 </div>
+
+                <div>
+                    <video id="localVideo" autoplay playsinline></video>
+                    <video id="remoteVideo" autoplay playsinline></video>
+                </div>
             </div>
         </div>
     </div>
 @endsection
-

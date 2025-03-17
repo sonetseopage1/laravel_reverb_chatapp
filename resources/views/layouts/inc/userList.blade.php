@@ -346,6 +346,149 @@
                 }
             });
 
+            let localStream;
+            let peerConnection;
+            const localVideo = document.getElementById(
+                'localVideo'); // You can use this for a placeholder or audio visualization
+            const remoteVideo = document.getElementById('remoteVideo'); // Can be a placeholder for remote audio
+            const signalingChannel = new BroadcastChannel('video-chat');
+
+            async function startCall() {
+                try {
+                    // Check if the user has a microphone available
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const audioDevices = devices.filter(device => device.kind === 'audioinput');
+
+                    // If microphone is available, start a voice call
+                    if (audioDevices.length > 0) {
+                        localStream = await navigator.mediaDevices.getUserMedia({
+                            audio: true, // Only request audio
+                            video: false // Disable video
+                        });
+
+                        // Optionally, display a simple "audio only" placeholder in the localVideo element
+                        localVideo.srcObject = localStream;
+
+                        // Initialize peer connection
+                        if (!peerConnection) {
+                            peerConnection = new RTCPeerConnection({
+                                iceServers: [{
+                                    urls: 'stun:stun.l.google.com:19302'
+                                }]
+                            });
+
+                            peerConnection.ontrack = event => {
+                                remoteVideo.srcObject = event.streams[
+                                    0]; // Can also be used for audio visualization
+                            };
+
+                            peerConnection.onicecandidate = event => {
+                                if (event.candidate) {
+                                    sendSignal({
+                                        type: 'candidate',
+                                        candidate: event.candidate
+                                    });
+                                }
+                            };
+                        }
+
+                        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+                        const offer = await peerConnection.createOffer();
+                        await peerConnection.setLocalDescription(offer);
+                        sendSignal({
+                            type: 'offer',
+                            offer
+                        });
+
+                    } else {
+                        console.error("No microphone found for voice call");
+                    }
+                } catch (error) {
+                    console.error("Error starting call:", error);
+                }
+            }
+
+            function sendSignal(data) {
+                fetch('/video/signal', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                        body: JSON.stringify({
+                            data,
+                            receiverId: rcvr_id
+                        })
+                    })
+                    .then(response => response.json())
+                    .catch(error => console.error("Error sending signal:", error));
+            }
+
+            // Listen for incoming signaling data
+            window.Echo.channel('video-chat.' + userId)
+                .listen('.video', (e) => {
+                    console.log('Received signal:', e);
+                    handleSignal(e.data);
+                });
+
+            async function handleSignal(data) {
+                console.log('remotte', data);
+                try {
+                    // Ensure peerConnection is initialized
+                    if (!peerConnection) {
+                        peerConnection = new RTCPeerConnection({
+                            iceServers: [{
+                                urls: 'stun:stun.l.google.com:19302'
+                            }]
+                        });
+
+                        peerConnection.ontrack = event => {
+                            remoteVideo.srcObject = event.streams[0]; // Handle remote audio
+                        };
+
+                        peerConnection.onicecandidate = event => {
+                            if (event.candidate) {
+                                sendSignal({
+                                    type: 'candidate',
+                                    candidate: event.candidate
+                                });
+                            }
+                        };
+                    }
+
+                    if (data.type === 'offer') {
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                        const answer = await peerConnection.createAnswer();
+                        await peerConnection.setLocalDescription(answer);
+                        sendSignal({
+                            type: 'answer',
+                            answer
+                        });
+
+                    } else if (data.type === 'answer') {
+                        if (peerConnection) {
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+                        } else {
+                            console.error("PeerConnection is not initialized before setting remote description.");
+                        }
+
+                    } else if (data.type === 'candidate') {
+                        if (peerConnection) {
+                            await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                        } else {
+                            console.error("PeerConnection is not initialized before adding ICE candidate.");
+                        }
+                    }
+
+                } catch (error) {
+                    console.error("Error handling signal:", error);
+                }
+            }
+
+            // Add event listener to start the call
+            document.getElementById('startCall').addEventListener('click', startCall);
+
         }
     </script>
 @endpush
