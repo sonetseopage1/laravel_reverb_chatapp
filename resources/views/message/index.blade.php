@@ -8,7 +8,7 @@
             </div>
 
             <div class="col-md-8">
-                <div class="card">
+                <div class="card" id="inbox">
                     <div class="card-header">{{ __('Dashboard') }}</div>
 
                     <div class="card-body vh-50">
@@ -20,14 +20,3 @@
     </div>
 @endsection
 
-@section('script')
-    <script type="module">
-        const userId = {{ auth()->user()->id }};
-
-        window.Echo.channel("messages." + userId).listen(".create", (e) => {
-            console.log(e);
-            var note = document.getElementById("notification");
-            note.insertAdjacentHTML('afterbegin', `<div class="alert alert-success">${e.message}</div>`);
-        });
-    </script>
-@endsection

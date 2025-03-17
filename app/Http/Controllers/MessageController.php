@@ -107,4 +107,26 @@ class MessageController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function message_inbox($id)
+    {
+        $messages = Message::where(function ($query) use ($id) {
+            $query->where('sender', auth()->id())
+                  ->where('receiver', $id);
+        })
+        ->orWhere(function ($query) use ($id) {
+            $query->where('sender', $id)
+                  ->where('receiver', auth()->id());
+        })
+        ->latest()  // Order by the latest messages
+        ->paginate(30);
+
+        $messages = $messages->reverse();
+        $receiver = User::find($id);
+
+        if ($receiver)
+            return view('message.componenet.inbox', compact('receiver', 'messages'));
+        else
+            return 'Data Not Found!';
+    }
 }
