@@ -10,7 +10,9 @@
 </div>
 <div class="card-body">
     <div class="Chat__wrapper" id="chat-box">
-       @include('layouts.inc.partial_message')
+        <ul class="Chat" id="notification">
+            @include('layouts.inc.partial_message')
+        </ul>
     </div>
 </div>
 <div class="card-footer">
@@ -34,5 +36,3 @@
         </div>
     </form>
 </div>
-
-
