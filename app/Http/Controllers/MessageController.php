@@ -21,19 +21,19 @@ class MessageController extends Controller
     {
         $messages = Message::where(function ($query) use ($id) {
             $query->where('sender', auth()->id())
-                  ->where('receiver', $id);
+                ->where('receiver', $id);
         })
-        ->orWhere(function ($query) use ($id) {
-            $query->where('sender', $id)
-                  ->where('receiver', auth()->id());
-        })
-        ->latest()  // Order by the latest messages
-        ->paginate(30);
+            ->orWhere(function ($query) use ($id) {
+                $query->where('sender', $id)
+                    ->where('receiver', auth()->id());
+            })
+            ->latest()  // Order by the latest messages
+            ->paginate(30);
 
         $messages = $messages->reverse();
         $receiver = User::find($id);
 
-        return view('message.chat_box', compact( 'messages', 'receiver'));
+        return view('message.chat_box', compact('messages', 'receiver'));
     }
 
     public function store(Request $request)
@@ -91,7 +91,7 @@ class MessageController extends Controller
         $receiverId = $request->receiver;
 
         // Trigger the Typing event
-        event(new Typing( $senderId, $receiverId,));
+        event(new Typing($senderId, $receiverId, ));
 
         return response()->json(['success' => true]);
     }
@@ -103,7 +103,7 @@ class MessageController extends Controller
         $receiverId = null;
 
         // Optionally broadcast a stop typing event or do other logic
-        event(new Typing( $senderId, $receiverId,));
+        event(new Typing($senderId, $receiverId, ));
 
         return response()->json(['success' => true]);
     }
@@ -112,14 +112,14 @@ class MessageController extends Controller
     {
         $messages = Message::where(function ($query) use ($id) {
             $query->where('sender', auth()->id())
-                  ->where('receiver', $id);
+                ->where('receiver', $id);
         })
-        ->orWhere(function ($query) use ($id) {
-            $query->where('sender', $id)
-                  ->where('receiver', auth()->id());
-        })
-        ->latest()  // Order by the latest messages
-        ->paginate(30);
+            ->orWhere(function ($query) use ($id) {
+                $query->where('sender', $id)
+                    ->where('receiver', auth()->id());
+            })
+            ->latest()  // Order by the latest messages
+            ->paginate(30);
 
         $messages = $messages->reverse();
         $receiver = User::find($id);
@@ -129,4 +129,31 @@ class MessageController extends Controller
         else
             return 'Data Not Found!';
     }
+
+    public function loadMoreMessages(Request $request)
+    {
+        $receiverId = $request->receiver_id;
+        $page = $request->page;
+
+        $messages = Message::where(function ($query) use ($receiverId) {
+            $query->where('sender', auth()->id())->where('receiver', $receiverId);
+        })
+            ->orWhere(function ($query) use ($receiverId) {
+                $query->where('sender', $receiverId)->where('receiver', auth()->id());
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'page', $page);
+
+        if ($messages->isEmpty()) {
+            return response()->json(['html' => '']);
+        }
+
+        $messages = $messages->reverse();
+        $receiver = User::find($receiverId);
+
+        $view = view('layouts.inc.partial_message', compact('messages', 'receiver'))->render();
+
+        return response()->json(['html' => $view]);
+    }
+
 }

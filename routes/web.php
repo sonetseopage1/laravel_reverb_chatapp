@@ -23,4 +23,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages/stopTyping', [MessageController::class, 'stopTyping'])->name('messages.stopTyping');
 
     Route::get('/message_inbox/{id}', [MessageController::class, 'message_inbox'])->name('message_inbox');
+    Route::get('/chat/load-more', [MessageController::class, 'loadMoreMessages'])->name('chat.loadMore');
+
 });

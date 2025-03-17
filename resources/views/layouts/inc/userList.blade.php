@@ -304,6 +304,47 @@
                     .catch(error => console.error("Error:", error));
             }
 
+            $(document).ready(function() {
+                let page = 1;
+                let loading = false;
+
+                $("#chat-box").on("scroll", function() {
+                    if ($(this).scrollTop() === 0 && !loading) {
+                        loading = true;
+                        page++;
+                        loadMoreMessages(page);
+                    }
+                });
+
+                function loadMoreMessages(page) {
+                    $.ajax({
+                        url: "{{ route('chat.loadMore') }}",
+                        type: "GET",
+                        data: {
+                            page: page,
+                            receiver_id: selectedUser,
+                        },
+                        beforeSend: function() {
+                            $("#chat-box").prepend('<div id="loading-indicator">Loading...</div>');
+                        },
+                        success: function(response) {
+                            $("#loading-indicator").remove();
+                            if (response.html) {
+                                let oldScrollHeight = $("#chat-box")[0].scrollHeight;
+                                $("#notification").prepend(response.html);
+                                let newScrollHeight = $("#chat-box")[0].scrollHeight;
+                                $("#chat-box").scrollTop(newScrollHeight - oldScrollHeight);
+                            }
+                            loading = false;
+                        },
+                        error: function() {
+                            $("#loading-indicator").remove();
+                            loading = false;
+                        },
+                    });
+                }
+            });
+
         }
     </script>
 @endpush
