@@ -23,21 +23,17 @@
             window.Echo.join("online-users")
                 .here((users) => {
                     onlineUsers = users;
-                    console.log("Currently Users", users);
                     updateUserList();
                     // Save the current users to localStorage
                     localStorage.setItem('onlineUsers', JSON.stringify(onlineUsers));
                 })
                 .joining((user) => {
-                    console.log(user.name + " Joined");
                     onlineUsers.push(user);
                     updateUserList();
                     // Update localStorage
                     localStorage.setItem('onlineUsers', JSON.stringify(onlineUsers));
                 })
                 .leaving((user) => {
-                    console.log(user.name + " left");
-
                     // Delay the removal of the user to avoid immediate "flip"
                     leavingUsers[user.id] = setTimeout(() => {
                         onlineUsers = onlineUsers.filter((u) => u.id !== user.id);
@@ -58,7 +54,6 @@
         });
 
         function updateUserList() {
-            console.log("Currently Online Users", onlineUsers);
             fetchUsers();
         }
 
@@ -77,9 +72,6 @@
 
                     users.forEach(user => {
                         let isOnline = onlineUsers.some(onlineUser => onlineUser.id == user.id);
-                        console.log('status', isOnline);
-                        console.log('onlineUser', onlineUsers);
-                        console.log('all user', user);
                         let onlineBadge = isOnline ?
                             `<span class="badge bg-success ms-auto">Online</span>` : "";
                         let selectedClass = selectedUser === user.id ? 'bg-primary text-white' : '';
@@ -138,6 +130,7 @@
         });
 
         function initializeNewScripts(rcvr_id) {
+            console.log('object receiver', rcvr_id);
             const userId = {{ auth()->user()->id }};
             const receiverId = rcvr_id;
             const chatBox = document.getElementById("chat-box");
@@ -348,9 +341,8 @@
 
             let localStream;
             let peerConnection;
-            const localVideo = document.getElementById(
-                'localVideo'); // You can use this for a placeholder or audio visualization
-            const remoteVideo = document.getElementById('remoteVideo'); // Can be a placeholder for remote audio
+            const localVideo = document.getElementById('localVideo');
+            const remoteVideo = document.getElementById('remoteVideo');
             const signalingChannel = new BroadcastChannel('video-chat');
 
             async function startCall() {
@@ -384,10 +376,10 @@
 
                             peerConnection.onicecandidate = event => {
                                 if (event.candidate) {
-                                    sendSignal({
-                                        type: 'candidate',
-                                        candidate: event.candidate
-                                    });
+                                    // sendSignal({
+                                    //     type: 'candidate',
+                                    //     candidate: event.candidate
+                                    // });
                                 }
                             };
                         }
@@ -396,6 +388,7 @@
 
                         const offer = await peerConnection.createOffer();
                         await peerConnection.setLocalDescription(offer);
+
                         sendSignal({
                             type: 'offer',
                             offer
@@ -410,19 +403,20 @@
             }
 
             function sendSignal(data) {
-                fetch('/video/signal', {
-                        method: 'POST',
+                console.log('signal pp', data);
+                fetch("{{ route('video_signal') }}", {
+                        method: "POST",
                         headers: {
                             'Content-Type': 'application/json',
                             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                         },
                         body: JSON.stringify({
-                            data,
+                            data: JSON.stringify(data),
                             receiverId: rcvr_id
                         })
                     })
                     .then(response => response.json())
-                    .catch(error => console.error("Error sending signal:", error));
+                    .catch(error => console.error("Error:", error));
             }
 
             // Listen for incoming signaling data
@@ -433,7 +427,7 @@
                 });
 
             async function handleSignal(data) {
-                console.log('remotte', data);
+                console.log('remote', data);
                 try {
                     // Ensure peerConnection is initialized
                     if (!peerConnection) {
@@ -458,8 +452,10 @@
                     }
 
                     if (data.type === 'offer') {
+                        console.log('Received SDP:', data.offer)
                         await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
                         const answer = await peerConnection.createAnswer();
+                        console.log('answer', answer)
                         await peerConnection.setLocalDescription(answer);
                         sendSignal({
                             type: 'answer',
@@ -481,6 +477,33 @@
                         }
                     }
 
+                } catch (error) {
+                    console.error("Error handling signal:", error);
+                }
+            }
+
+            async function handleSignal2(data) {
+
+                try {
+                    if (data.type === 'offer') {
+                        console.log('answer', data);
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                        const answer = await peerConnection.createAnswer();
+                        await peerConnection.setLocalDescription(answer);
+
+                        sendSignal({
+                            type: 'answer',
+                            answer
+                        });
+                    } else if (data.type === 'answer') {
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+                    } else if (data.type === 'candidate') {
+                        if (peerConnection.remoteDescription) {
+                            await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                        } else {
+                            console.warn("ICE candidate received before remote description was set.");
+                        }
+                    }
                 } catch (error) {
                     console.error("Error handling signal:", error);
                 }

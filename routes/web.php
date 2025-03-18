@@ -27,5 +27,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/chat/load-more', [MessageController::class, 'loadMoreMessages'])->name('chat.loadMore');
 
     Route::get('/video/call', [VideoCallController::class, 'call']);
-    Route::post('/video/signal', [VideoCallController::class, 'signal']);
+    Route::post('/video/signal', [VideoCallController::class, 'signal'])->name('video_signal');
 });

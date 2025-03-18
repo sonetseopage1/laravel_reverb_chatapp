@@ -8,6 +8,7 @@
             </div>
 
             <div class="col-md-8">
+
                 <div class="card" id="inbox">
                     <div class="card-header">{{ __('Dashboard') }}</div>
 
@@ -16,10 +17,11 @@
                     </div>
                 </div>
 
-                <div>
-                    <video id="localVideo" autoplay playsinline></video>
-                    <video id="remoteVideo" autoplay playsinline></video>
+                <div class=row">
+                    <video class="col-md-6" id="localVideo" autoplay playsinline></video>
+                    <video class="col-md-6" id="remoteVideo" autoplay playsinline></video>
                 </div>
+
             </div>
         </div>
     </div>
