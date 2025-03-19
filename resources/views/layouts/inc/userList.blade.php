@@ -355,7 +355,7 @@
                     if (audioDevices.length > 0) {
                         localStream = await navigator.mediaDevices.getUserMedia({
                             audio: true, // Only request audio
-                            video: false // Disable video
+                            video: true // Disable video
                         });
 
                         // Optionally, display a simple "audio only" placeholder in the localVideo element
@@ -428,6 +428,9 @@
 
             async function handleSignal(data) {
                 console.log('remote', data);
+
+                data = JSON.parse(data);
+
                 try {
                     // Ensure peerConnection is initialized
                     if (!peerConnection) {
@@ -450,6 +453,8 @@
                             }
                         };
                     }
+
+
 
                     if (data.type === 'offer') {
                         console.log('Received SDP:', data.offer)
