@@ -17,7 +17,7 @@
                     </div>
                 </div>
 
-                <div class=row">
+                <div class="row">
                     <video class="col-md-6" id="localVideo" autoplay playsinline></video>
                     <video class="col-md-6" id="remoteVideo" autoplay playsinline></video>
                 </div>
